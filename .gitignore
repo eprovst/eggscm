@@ -1,0 +1,8 @@
+/*.import.scm
+/*.types
+/*.c
+/*.o
+/*.so
+/*.link
+/*.build.sh
+/*.install.sh

@@ -1,0 +1,59 @@
+;;;; -*- Scheme -*-
+((synopsis "Easy Generative Graphics in SCheMe")
+ (author "Evert Provoost")
+ (version "0.1.0")
+ (category graphics)
+ (license "GPL-3")
+
+ (dependencies sdl2)
+ (test-dependencies test)
+
+ (components
+  (extension eggscm
+   (component-dependencies
+    eggscm.color
+    eggscm.draw
+    eggscm.iteration
+    eggscm.math
+    eggscm.vectors
+    eggscm.sketch
+    eggscm.time
+    eggscm.window)
+   (csc-options "-O3" "-d0"))
+
+  (extension eggscm.color
+   (component-dependencies
+    eggscm.math)
+   (csc-options "-O3" "-d0"))
+
+  (extension eggscm.draw
+    (component-dependencies
+     eggscm.window
+     eggscm.color
+     eggscm.vectors)
+   (csc-options "-O3" "-d0"))
+
+  (extension eggscm.iteration
+   (csc-options "-O3" "-d0"))
+
+  (extension eggscm.math
+   (csc-options "-O3" "-d0"))
+
+  (extension eggscm.sketch
+   (component-dependencies
+    eggscm.window
+    eggscm.math)
+   (csc-options "-O3" "-d0"))
+
+  (extension eggscm.time
+   (component-dependencies
+    eggscm.math)
+   (csc-options "-O3" "-d0"))
+
+  (extension eggscm.vectors
+   (component-dependencies
+    eggscm.math)
+   (csc-options "-O3" "-d0"))
+
+  (extension eggscm.window
+   (csc-options "-O3" "-d0"))))
