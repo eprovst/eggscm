@@ -4,6 +4,7 @@
 
         (import scheme
           (chicken base)
+          (eggscm iteration)
           (eggscm window)
           (eggscm math)
           (prefix sdl2 "sdl:"))
@@ -13,7 +14,7 @@
         (define (frame-rate fps)
           (set! the-frame-rate fps))
 
-        (define (execute-in-frame frame-code)
+        (define (run-in-one-frame frame-code)
           (let ((start-time (sdl:get-ticks)))
             (frame-code)
             ; Correct for frame rate, if set
@@ -24,17 +25,10 @@
                   (sdl:delay! (- goal-time frame-time)))))))
 
         (define (sketch setup-code loop-code)
-          (initialize-window-and-canvas)
+          (initialize-window)
           (setup-code)
-          (flush-canvas)
-          (run-loop loop-code))
-
-        (define (run-loop loop-code)
-          (when (sdl:quit-requested?)
-            (exit))
-
-          (execute-in-frame loop-code)
-
-          ; TODO: do we need to flush events?
-          (flush-canvas)
-          (run-loop loop-code)))
+          (while (not (sdl:quit-requested?))
+            (flush-canvas)
+            ; TODO: do we need to flush events after frame?
+            (run-in-one-frame loop-code))
+          (sdl:quit!)))

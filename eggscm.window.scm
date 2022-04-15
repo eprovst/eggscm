@@ -1,5 +1,5 @@
 (module (eggscm window)
-        (initialize-window-and-canvas
+        (initialize-window
          window-title
          screenshot
          flush-canvas
@@ -8,6 +8,7 @@
          size
          resizable
          background
+         canvas-get
          canvas-set)
 
         (import scheme
@@ -17,9 +18,10 @@
 
         (define the-window '())
 
-        (define the-canvas '())
+        (define (get-canvas)
+          (sdl:window-surface the-window))
 
-        (define (initialize-window-and-canvas)
+        (define (initialize-window)
           ; Initialise SDL
           (sdl:set-main-ready!)
           (sdl:init! '(video))
@@ -37,7 +39,7 @@
                                                'undefined 'undefined
                                                600 400))
           (sdl:window-minimum-size-set! the-window '(16 16))
-          (set! the-canvas (sdl:create-renderer! the-window)))
+          (sdl:quit-requested?)) ; HACK: wait for full init
 
         (define (window-title title)
           (sdl:window-title-set! the-window title))
@@ -49,29 +51,30 @@
           (sdl:window-resizable-set! the-window bool))
         
         (define (screenshot file)
-          (flush-canvas)
-          (sdl:save-bmp! (sdl:window-surface the-window) file))
+          (sdl:save-bmp! (get-canvas) file))
 
         (define (flush-canvas)
-          (sdl:render-present! the-canvas))
+          (get-canvas) ; Make sure there is a canvas to flush
+          (sdl:update-window-surface! the-window))
 
         (define (width)
-          (let-values (((width _) (sdl:window-size the-window)))
-            width))
+          (sdl:surface-w (get-canvas)))
 
         (define (height)
-          (let-values (((_ height) (sdl:window-size the-window)))
-            height))
+          (sdl:surface-h (get-canvas)))
 
         (define (canvas-in-bounds? x y)
           (and (>= x 0) (< x (width))
                (>= y 0) (< y (height))))
 
         (define (background color)
-          (sdl:render-draw-color-set! the-canvas color)
-          (sdl:render-clear! the-canvas))
+          (sdl:fill-rect! (get-canvas) #f color))
+
+        (define (canvas-get x y)
+          (if (canvas-in-bounds? x y)
+            (sdl:surface-ref (get-canvas) x y)
+            (sdl:make-color 0 0 0 0)))
 
         (define (canvas-set x y color)
           (when (canvas-in-bounds? x y)
-            (sdl:render-draw-color-set! the-canvas color)
-            (sdl:render-draw-point! the-canvas x y))))
+            (sdl:surface-set! (get-canvas) x y color))))

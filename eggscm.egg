@@ -41,6 +41,7 @@
 
   (extension eggscm.sketch
    (component-dependencies
+    eggscm.iteration
     eggscm.window
     eggscm.math)
    (csc-options "-O3" "-d0"))

@@ -1,6 +1,7 @@
 (module (eggscm iteration)
-        (repeat
-         for)
+        (for
+         repeat
+         while)
 
         (import scheme
                 (chicken base))
@@ -18,4 +19,13 @@
              (letrec ((aux (lambda (i f)
                              (when (> i 0)
                                (f) (aux (- i 1) f)))))
-               (aux n (lambda () body ...)))))))
+               (aux n (lambda () body ...))))))
+
+        (define-syntax while
+          (syntax-rules ()
+            ((_ cond body ...)
+             (letrec ((aux (lambda ()
+                             (when cond
+                               body ...
+                               (aux)))))
+                 (aux))))))
