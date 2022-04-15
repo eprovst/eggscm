@@ -1,6 +1,9 @@
 (module (eggscm draw)
         (color
-         pixel)
+         color!
+         background!
+         pixel
+         pixel!)
 
         (import scheme
                 (chicken base)
@@ -10,9 +13,19 @@
 
         (define the-color (rgb 1 1 1))
 
-        (define (color color)
+        (define (color)
+          the-color)
+
+        (define (color! color)
           (set! the-color color))
+
+        (define (background! color)
+          (canvas-fill! color))
 
         (define (pixel p)
           (let-values (((x y) (point->pixels p)))
-            (canvas-set x y the-color))))
+            (canvas-pixel x y)))
+
+        (define (pixel! p)
+          (let-values (((x y) (point->pixels p)))
+            (canvas-pixel! x y the-color))))

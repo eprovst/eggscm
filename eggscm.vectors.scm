@@ -1,6 +1,8 @@
 (module (eggscm vectors)
         (origin
+         origin!
          scale
+         scale!
          coords
          point->pixels)
 
@@ -29,13 +31,19 @@
 
         (define the-origin '(0 0))
 
-        (define (origin p)
+        (define (origin)
+          the-origin)
+
+        (define (origin! p)
           (assert (vect? p))
           (set! the-origin p))
 
         (define the-scale '(1 1))
 
-        (define (scale xs ys)
+        (define (scale)
+          (coords the-scale))
+
+        (define (scale! xs ys)
           (set! the-scale (list xs ys)))
 
         (define (to-screen-space p)

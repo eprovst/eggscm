@@ -1,6 +1,7 @@
 (module (eggscm sketch)
         (sketch
-         frame-rate)
+         frame-rate
+         frame-rate!)
 
         (import scheme
           (chicken base)
@@ -11,7 +12,10 @@
 
         (define the-frame-rate 60)
 
-        (define (frame-rate fps)
+        (define (frame-rate)
+          the-frame-rate)
+
+        (define (frame-rate! fps)
           (set! the-frame-rate fps))
 
         (define (run-in-one-frame frame-code)
@@ -25,10 +29,10 @@
                   (sdl:delay! (- goal-time frame-time)))))))
 
         (define (sketch setup-code loop-code)
-          (initialize-window)
+          (initialize-window!)
           (setup-code)
           (while (not (sdl:quit-requested?))
-            (flush-canvas)
+            (canvas-flush!)
             ; TODO: do we need to flush events after frame?
             (run-in-one-frame loop-code))
           (sdl:quit!)))

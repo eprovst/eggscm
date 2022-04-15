@@ -1,15 +1,20 @@
 (module (eggscm window)
-        (initialize-window
+        (initialize-window!
          window-title
-         screenshot
-         flush-canvas
+         window-title!
          width
          height
          size
-         resizable
-         background
-         canvas-get
-         canvas-set)
+         size!
+         resizable?
+         resizable!
+         screenshot!
+         canvas-flush!
+         canvas-fill!
+         canvas-pixel
+         canvas-pixel-unsafe
+         canvas-pixel!
+         canvas-pixel-unsafe!)
 
         (import scheme
           (chicken base)
@@ -18,10 +23,10 @@
 
         (define the-window '())
 
-        (define (get-canvas)
+        (define (canvas)
           (sdl:window-surface the-window))
 
-        (define (initialize-window)
+        (define (initialize-window!)
           ; Initialise SDL
           (sdl:set-main-ready!)
           (sdl:init! '(video))
@@ -41,40 +46,55 @@
           (sdl:window-minimum-size-set! the-window '(16 16))
           (sdl:quit-requested?)) ; HACK: wait for full init
 
-        (define (window-title title)
+        (define (window-title)
+          (sdl:window-title the-window))
+
+        (define (window-title! title)
           (sdl:window-title-set! the-window title))
 
-        (define (size width height)
-          (sdl:window-size-set! the-window (list width height)))
-
-        (define (resizable bool)
-          (sdl:window-resizable-set! the-window bool))
-        
-        (define (screenshot file)
-          (sdl:save-bmp! (get-canvas) file))
-
-        (define (flush-canvas)
-          (get-canvas) ; Make sure there is a canvas to flush
-          (sdl:update-window-surface! the-window))
-
         (define (width)
-          (sdl:surface-w (get-canvas)))
+          (sdl:surface-w (canvas)))
 
         (define (height)
-          (sdl:surface-h (get-canvas)))
+          (sdl:surface-h (canvas)))
+
+        (define (size)
+          (values (width) (height)))
+
+        (define (size! width height)
+          (sdl:window-size-set! the-window (list width height)))
+
+        (define (resizable?)
+          (sdl:window-resizable? the-window))
+
+        (define (resizable! bool)
+          (sdl:window-resizable-set! the-window bool))
+        
+        (define (screenshot! file)
+          (sdl:save-bmp! (canvas) file))
+
+        (define (canvas-flush!)
+          (canvas) ; Make sure there is a canvas to flush
+          (sdl:update-window-surface! the-window))
+
+        (define (canvas-fill! color)
+          (sdl:fill-rect! (canvas) #f color))
 
         (define (canvas-in-bounds? x y)
           (and (>= x 0) (< x (width))
                (>= y 0) (< y (height))))
 
-        (define (background color)
-          (sdl:fill-rect! (get-canvas) #f color))
-
-        (define (canvas-get x y)
+        (define (canvas-pixel x y)
           (if (canvas-in-bounds? x y)
-            (sdl:surface-ref (get-canvas) x y)
+            (canvas-pixel-unsafe x y)
             (sdl:make-color 0 0 0 0)))
 
-        (define (canvas-set x y color)
+        (define (canvas-pixel-unsafe x y)
+          (sdl:surface-ref (canvas) x y))
+
+        (define (canvas-pixel! x y color)
           (when (canvas-in-bounds? x y)
-            (sdl:surface-set! (get-canvas) x y color))))
+            (canvas-pixel-unsafe! x y color)))
+
+        (define (canvas-pixel-unsafe! x y color)
+          (sdl:surface-set! (canvas) x y color)))

@@ -1,6 +1,8 @@
 (module (eggscm color)
-        (rgb rgba
-         hsb hsba)
+        (rgb
+         rgba
+         hsb
+         hsba)
 
         (import scheme
           (eggscm math)
