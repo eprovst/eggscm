@@ -28,9 +28,10 @@
 
   (extension eggscm.draw
     (component-dependencies
-     eggscm.window
      eggscm.color
-     eggscm.vectors)
+     eggscm.math
+     eggscm.vectors
+     eggscm.window)
    (csc-options "-O3" "-d0"))
 
   (extension eggscm.iteration
@@ -47,13 +48,9 @@
    (csc-options "-O3" "-d0"))
 
   (extension eggscm.time
-   (component-dependencies
-    eggscm.math)
    (csc-options "-O3" "-d0"))
 
   (extension eggscm.vectors
-   (component-dependencies
-    eggscm.math)
    (csc-options "-O3" "-d0"))
 
   (extension eggscm.window

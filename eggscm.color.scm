@@ -10,10 +10,10 @@
 
         (define (rgba r g b a)
           (sdl:make-color
-           (f->i (* 255 (clamp r 0 1)))
-           (f->i (* 255 (clamp g 0 1)))
-           (f->i (* 255 (clamp b 0 1)))
-           (f->i (* 255 (clamp a 0 1)))))
+           (integer (* 255 (clamp r 0 1)))
+           (integer (* 255 (clamp g 0 1)))
+           (integer (* 255 (clamp b 0 1)))
+           (integer (* 255 (clamp a 0 1)))))
 
         (define (rgb r g b)
           (rgba r g b 1))
