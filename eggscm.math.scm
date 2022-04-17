@@ -1,6 +1,8 @@
 (module (eggscm math)
         (integer
+         pi/6
          pi/4
+         pi/3
          pi/2
          pi
          2pi
@@ -12,7 +14,8 @@
          tand
          clamp
          mod
-         linear-map)
+         lmap
+         lerp)
 
         (import scheme)
 
@@ -21,7 +24,9 @@
 
         (define pi/4 (atan 1))
         (define pi/2 (* 2 pi/4))
+        (define pi/6 (/ pi/2 3))
         (define pi   (* 4 pi/4))
+        (define pi/3 (/ pi 3))
         (define 2pi  (* 8 pi/4))
         (define tau  2pi)
 
@@ -45,9 +50,12 @@
 
         (define (mod f a)
           (let ((m (- f (* (truncate (/ f a)) a))))
-            (if (> m 0) m (+ m a))))
+            (if (>= m 0) m (+ m a))))
 
         ; map f from range a b to c d linearly
-        (define (linear-map f a b c d)
+        (define (lmap f a b c d)
           (+ c (* (/ (- (* 1.0 f) a) (- b a))
-                  (- d c)))))
+                  (- d c))))
+
+        (define (lerp a b t)
+          (+ a (* t (- b a)))))

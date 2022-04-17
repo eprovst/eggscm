@@ -1,5 +1,5 @@
 (module (eggscm sketch)
-        (frame
+        (frame-count
          frame-rate
          frame-rate!
          loop?
@@ -13,10 +13,10 @@
           (eggscm math)
           (prefix sdl2 "sdl:"))
 
-        (define the-frame 0)
+        (define the-frame-count 0)
 
-        (define (frame)
-          the-frame)
+        (define (frame-count)
+          the-frame-count)
 
         (define the-frame-rate 60)
 
@@ -52,8 +52,8 @@
           (canvas-flush!)
           (while (not (sdl:quit-requested?))
             ; TODO: do we need to flush events after frame?
-            (if (or (loop?) (= the-frame 0))
-              (begin (set! the-frame (+ the-frame 1))
+            (if (or (loop?) (= the-frame-count 0))
+              (begin (set! the-frame-count (+ the-frame-count 1))
                      (run-in-one-frame draw-code)
                      (canvas-flush!))
               (sdl:wait-event!)))

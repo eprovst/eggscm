@@ -65,6 +65,13 @@
                (+ s (vec-idx v 1))
                (+ s (vec-idx v 2))))
 
+        (define (vec-scl v s)
+          (assert (number? s))
+          (assert (vec? v))
+          (vec (- (vec-idx v 0) s)
+               (- (vec-idx v 1) s)
+               (- (vec-idx v 2) s)))
+
         (define (scl*vec s v)
           (assert (number? s))
           (assert (vec? v))
@@ -79,12 +86,34 @@
                (+ (vec-idx v1 1) (vec-idx v2 1))
                (+ (vec-idx v1 2) (vec-idx v2 2))))
 
+        (define (vec-vec v1 v2)
+          (assert (vec? v1))
+          (assert (vec? v2))
+          (vec (- (vec-idx v1 0) (vec-idx v2 0))
+               (- (vec-idx v1 1) (vec-idx v2 1))
+               (- (vec-idx v1 2) (vec-idx v2 2))))
+
         (define (vec*vec v1 v2)
           (assert (vec? v1))
           (assert (vec? v2))
           (+ (* (vec-idx v1 0) (vec-idx v2 0))
              (* (vec-idx v1 1) (vec-idx v2 1))
              (* (vec-idx v1 2) (vec-idx v2 2))))
+
+        (define (vec-lerp v1 v2 t)
+          (assert (vec? v1))
+          (assert (vec? v2))
+          (assert (number? t))
+          (vec+vec v1 (scl*vec t (vec-vec v2 v1))))
+
+        (define (norm v)
+          (assert (vec? v))
+          (sqrt (vec*vec v v)))
+
+        (define (dist v1 v2)
+          (assert (vec? v1))
+          (assert (vec? v2))
+          (norm (vec-vec v2 v1)))
 
         (define (mat m00 m01 m02
                      m10 m11 m12
@@ -126,6 +155,13 @@
                   (scl+vec s (mat-row m 1))
                   (scl+vec s (mat-row m 2))))
 
+        (define (mat-scl m s)
+          (assert (number? s))
+          (assert (mat? m))
+          (vector (vec-scl (mat-row m 0) s)
+                  (vec-scl (mat-row m 1) s)
+                  (vec-scl (mat-row m 2) s)))
+
         (define (scl*mat s m)
           (assert (number? s))
           (assert (mat? m))
@@ -153,6 +189,13 @@
           (vector (vec+vec (mat-row m1 0) (mat-row m2 0))
                   (vec+vec (mat-row m1 1) (mat-row m2 1))
                   (vec+vec (mat-row m1 2) (mat-row m2 2))))
+
+        (define (mat-mat m1 m2)
+          (assert (mat? m1))
+          (assert (mat? m2))
+          (vector (vec-vec (mat-row m1 0) (mat-row m2 0))
+                  (vec-vec (mat-row m1 1) (mat-row m2 1))
+                  (vec-vec (mat-row m1 2) (mat-row m2 2))))
 
         (define (mat*mat m1 m2)
           (assert (mat? m1))
@@ -190,4 +233,9 @@
           (mul -1 a))
 
         (define (sub a b)
-          (add a (neg b))))
+          (cond ((and (number? a) (number? b)) (- a b))
+                ((and (vec? a) (number? b)) (vec-scl a b))
+                ((and (vec? a) (vec? b)) (vec-vec a b))
+                ((and (mat? a) (number? b)) (mat-scl a b))
+                ((and (mat? a) (mat? b)) (mat-mat a b))
+                (else (add a (neg b))))))

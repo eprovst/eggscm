@@ -2,7 +2,10 @@
         (rgb
          rgba
          hsb
-         hsba)
+         hsba
+         gry
+         grya
+         color-lerp)
 
         (import scheme
           (eggscm math)
@@ -19,12 +22,21 @@
           (rgba r g b 1))
 
         (define (hsba h s b a)
-          (let* ((h (mod h 360))
+          (let* ((h (mod h 2pi))
                  (s (clamp s 0 1))
                  (b (clamp b 0 1))
-                 (k (lambda (n) (mod (+ n (/ h 60)) 6)))
-                 (f (lambda (n) (- b (* b s (max 0 (min (k n) (- 4 (k n)) 1)))))))
-            (rgba (f 5) (f 3) (f 1) a)))
+                 (k (lambda (n) (mod (+ n (/ h pi/3)) 6)))
+                 (f (lambda (n k) (- b (* b s (clamp (min k (- 4 k)) 0 1))))))
+            (rgba (f 5 (k 5)) (f 3 (k 3)) (f 1 (k 1)) a)))
 
         (define (hsb h s b)
-          (hsba h s b 1)))
+          (hsba h s b 1))
+
+        (define (grya g a)
+          (rgba g g g a))
+
+        (define (gry g)
+          (grya g 1))
+
+        (define (color-lerp c1 c2 t)
+          (sdl:color-lerp c1 c2 t)))

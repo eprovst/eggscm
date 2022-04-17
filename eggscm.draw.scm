@@ -93,15 +93,21 @@
         ;; Transform
         (define the-transform (mat-id))
 
-        (define (translate! xo yo)
-          (assert (number? xo))
-          (assert (number? yo))
-          (set! the-transform
-                (mat*mat
-                  (mat 1 0 xo
-                       0 1 yo
-                       0 0  1)
-                  the-transform)))
+        (define (translate! a . o)
+          (assert (<= (length o) 1))
+          (if (null? o)
+              (let-values (((xo yo) (crds a)))
+                (translate! xo yo))
+              (let ((xo a)
+                    (yo (car o)))
+                (assert (number? xo))
+                (assert (number? yo))
+                (set! the-transform
+                      (mat*mat
+                        (mat 1 0 xo
+                             0 1 yo
+                             0 0  1)
+                        the-transform)))))
 
         (define (scale! s . os)
           (assert (<= (length os) 1))

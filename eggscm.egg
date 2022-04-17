@@ -40,6 +40,11 @@
   (extension eggscm.math
    (csc-options "-O3" "-d0"))
 
+  (extension eggscm.random
+   (component-dependencies
+    eggscm.math)
+   (csc-options "-O3" "-d0"))
+
   (extension eggscm.sketch
    (component-dependencies
     eggscm.iteration

@@ -19,9 +19,9 @@
   (time-it ; TODO: it's pretty slow...
     (for i from 0 to (width) do
       (for j from 0 to (height) do
-        (let ((x (linear-map i 0 (width)  -1.6 1.6))
-              (y (linear-map j 0 (height) -1.1 1.1)))
+        (let ((x (lmap i 0 (width)  -1.6 1.6))
+              (y (lmap j 0 (height) -1.1 1.1)))
           (canvas-pixel-unsafe! i j
-            (hsb (julia-iterations x y) 0.7 1)))))))
+            (hsb (radians (julia-iterations x y)) 0.7 1)))))))
 
 (sketch setup draw)
