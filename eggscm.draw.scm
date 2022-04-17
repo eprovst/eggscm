@@ -1,6 +1,11 @@
 (module (eggscm draw)
-        (color
+        (background!
+         pixel
+         pixel!
+         color
          color!
+         push-style!
+         pop-style!
          origin
          origin!
          y-up?
@@ -11,9 +16,10 @@
          shear-y!
          translate!
          reset-transform!
-         background!
-         pixel
-         pixel!)
+         push-transform!
+         pop-transform!
+         push!
+         pop!)
 
         (import scheme
                 (chicken base)
@@ -22,14 +28,42 @@
                 (eggscm vectors)
                 (eggscm window))
 
-        ;; Stroke settings
-        (define the-color (rgb 1 1 1))
+        ;; Drawing functions
+        (define (background! color)
+          (canvas-fill! color))
+
+        (define (pixel p)
+          (let-values (((x y) (point->pixel p)))
+            (canvas-pixel x y)))
+
+        (define (pixel! p)
+          (let-values (((x y) (point->pixel p)))
+            (canvas-pixel! x y (color))))
+
+        ;; Style settings
+        (define the-style
+         (vector (rgb 1 1 1)))
 
         (define (color)
-          the-color)
+          (vector-ref the-style 0))
 
         (define (color! color)
-          (set! the-color color))
+          (vector-set! the-style 0 color))
+
+        ;; Style stack
+        (define the-style-stack '())
+
+        (define (push-style!)
+          (set! the-style-stack
+                (cons the-style
+                      the-style-stack)))
+
+        (define (pop-style!)
+          (when (not (null? the-style-stack))
+            (set! the-style
+              (car the-style-stack))
+            (set! the-style-stack
+              (cdr the-style-stack))))
 
         ;; Coordinate system settings
         (define the-origin (pt 0 0))
@@ -99,9 +133,9 @@
           (assert (number? angle))
           (set! the-transform
                 (mat*mat
-                  (mat 1 (tan angle) 0
-                       0           1 0
-                       0           0 1)
+                  (mat 1 (- (tan angle)) 0
+                       0               1 0
+                       0               0 1)
                   the-transform)))
 
         (define (shear-y! angle)
@@ -115,6 +149,30 @@
 
         (define (reset-transform!)
           (set! the-transform (mat-id)))
+
+        ;; Transform stack
+        (define the-transform-stack '())
+
+        (define (push-transform!)
+          (set! the-transform-stack
+                (cons the-transform
+                      the-transform-stack)))
+
+        (define (pop-transform!)
+          (when (not (null? the-transform-stack))
+            (set! the-transform
+              (car the-transform-stack))
+            (set! the-transform-stack
+              (cdr the-transform-stack))))
+
+        ;; Control both transform and style stacks
+        (define (push!)
+          (push-style!)
+          (push-transform!))
+
+        (define (pop!)
+          (pop-style!)
+          (pop-transform!))
 
         ;; Coordinate transform
         (define (flip-y p)
@@ -131,16 +189,4 @@
 
         (define (point->pixel p)
           (let-values (((x y) (crds (to-screen-space p))))
-            (values (integer x) (integer y))))
-
-        ;; Drawing functions
-        (define (background! color)
-          (canvas-fill! color))
-
-        (define (pixel p)
-          (let-values (((x y) (point->pixel p)))
-            (canvas-pixel x y)))
-
-        (define (pixel! p)
-          (let-values (((x y) (point->pixel p)))
-            (canvas-pixel! x y the-color))))
+            (values (integer x) (integer y)))))

@@ -170,9 +170,9 @@
                 ((and (number? a) (mat? b)) (scl+mat a b))
                 ((and (mat? a) (number? b)) (scl+mat b a))
                 ((and (mat? a) (mat? b)) (mat+mat a b))
-                (else (abort "no available + routine for a and b."))))
+                (else (abort "no available addition routine for a and b."))))
 
-        (define (dot a b)
+        (define (mul a b)
           (cond ((and (number? a) (number? b)) (* a b))
                 ((and (number? a) (vec? b)) (scl*vec a b))
                 ((and (vec? a) (number? b)) (scl*vec b a))
@@ -182,4 +182,12 @@
                 ((and (mat? a) (vec? b)) (mat*vec a b))
                 ((and (vec? a) (mat? b)) (vec*mat a b))
                 ((and (mat? a) (mat? b)) (mat*mat a b))
-                (else (abort "no available * routine for a and b.")))))
+                (else (abort "no available multiplication routine for a and b."))))
+
+        (define dot mul)
+
+        (define (neg a)
+          (mul -1 a))
+
+        (define (sub a b)
+          (add a (neg b))))

@@ -1,7 +1,9 @@
 (module (eggscm math)
         (integer
-         pi
+         pi/4
          pi/2
+         pi
+         2pi
          tau
          radians
          degrees
@@ -17,9 +19,11 @@
         (define (integer f)
           (inexact->exact (round f)))
 
-        (define pi   (* 4 (atan 1)))
-        (define pi/2 (* 2 (atan 1)))
-        (define tau  (* 8 (atan 1)))
+        (define pi/4 (atan 1))
+        (define pi/2 (* 2 pi/4))
+        (define pi   (* 4 pi/4))
+        (define 2pi  (* 8 pi/4))
+        (define tau  2pi)
 
         (define (radians d)
           (/ (* d pi) 180))
