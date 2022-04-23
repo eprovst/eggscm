@@ -27,7 +27,7 @@
   (repeat 100
     (chaos-game-step)
     (pixel! v))
-  (when (> (frame-count) 200)
+  (when (> (frame) 200)
     (loop! #f)))
 
 (sketch setup loop)

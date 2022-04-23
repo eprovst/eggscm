@@ -20,7 +20,7 @@
   (repeat 100
     (set! p (quadmap p))
     (pixel! p))
-  (when (> (frame-count) 100)
+  (when (> (frame) 100)
     (loop! #f)))
 
 (sketch setup loop)

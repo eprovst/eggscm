@@ -93,13 +93,9 @@
         ;; Transform
         (define the-transform (mat-id))
 
-        (define (translate! a . o)
-          (assert (<= (length o) 1))
-          (if (null? o)
-              (let-values (((xo yo) (crds a)))
-                (translate! xo yo))
-              (let ((xo a)
-                    (yo (car o)))
+        (define (translate! xo #!optional yo)
+          (if yo
+              (begin
                 (assert (number? xo))
                 (assert (number? yo))
                 (set! the-transform
@@ -107,14 +103,13 @@
                         (mat 1 0 xo
                              0 1 yo
                              0 0  1)
-                        the-transform)))))
+                        the-transform)))
+              (let-values (((xo yo) (crds xo)))
+                (translate! xo yo))))
 
-        (define (scale! s . os)
-          (assert (<= (length os) 1))
-          (if (null? os)
-              (scale! s s)
-              (let ((xs s)
-                    (ys (car os)))
+        (define (scale! xs #!optional ys)
+          (if ys
+              (begin
                 (assert (number? xs))
                 (assert (number? ys))
                 (set! the-transform
@@ -122,7 +117,8 @@
                         (mat xs  0 0
                               0 ys 0
                               0  0 1)
-                        the-transform)))))
+                        the-transform)))
+              (scale! xs xs)))
 
         (define (rotate! angle)
           (assert (number? angle))

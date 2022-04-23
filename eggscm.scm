@@ -1,9 +1,11 @@
 (module eggscm *
         (import
+         scheme
          (chicken module)
 
          (eggscm color)
          (eggscm draw)
+         (eggscm io)
          (eggscm iteration)
          (eggscm math)
          (eggscm random)
@@ -15,6 +17,7 @@
         (reexport
          (eggscm color)
          (eggscm draw)
+         (eggscm io)
          (eggscm iteration)
          (eggscm math)
          (eggscm random)
