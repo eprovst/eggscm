@@ -1,12 +1,12 @@
 (module (eggscm draw)
-        (background!
+        (mouse
+         background!
          pixel
          pixel!
          color
          color!
          push-style!
          pop-style!
-         origin
          origin!
          y-up?
          y-up!
@@ -27,6 +27,11 @@
                 (eggscm math)
                 (eggscm vectors)
                 (eggscm window))
+
+        ;; Info
+        (define (mouse)
+          (let-values (((x y) (window-mouse-position)))
+            (pixel->point x y)))
 
         ;; Drawing functions
         (define (background! color)
@@ -66,17 +71,24 @@
               (cdr the-style-stack))))
 
         ;; Coordinate system settings
-        (define the-origin (pt 0 0))
+        (define the-origin (vt 0 0))
 
-        (define (origin)
+        (define (origin-vector)
           (if (equal? the-origin 'center)
-              (pt (/ (width) 2) (/ (height) 2))
+              (vt (/ (width) 2) (/ (height) 2))
               the-origin))
 
-        (define (origin! p)
-          (assert (or (equal? p 'center)
-                      (pt? p)))
-          (set! the-origin p))
+        (define (origin! x #!optional y)
+          (assert (or (and (equal? x 'center) (not y))
+                      (and (pt? x) (not y))
+                      (and (number? x) (number? y))))
+          (cond ((equal? x 'center)
+                 (set! the-origin 'center))
+                ((pt? x)
+                 (let-values (((x y) (crds (from-screen-space x))))
+                   (set! the-origin (vt x y))))
+                (else
+                 (set! the-origin (vt x y)))))
 
         (define the-y-up #t)
 
@@ -92,6 +104,7 @@
 
         ;; Transform
         (define the-transform (mat-id))
+        (define the-inverse-transform (mat-id))
 
         (define (translate! xo #!optional yo)
           (if yo
@@ -103,7 +116,13 @@
                         (mat 1 0 xo
                              0 1 yo
                              0 0  1)
-                        the-transform)))
+                        the-transform))
+                (set! the-inverse-transform
+                      (mat*mat
+                        the-inverse-transform
+                        (mat 1 0 (- xo)
+                             0 1 (- yo)
+                             0 0      1))))
               (let-values (((xo yo) (crds xo)))
                 (translate! xo yo))))
 
@@ -117,7 +136,13 @@
                         (mat xs  0 0
                               0 ys 0
                               0  0 1)
-                        the-transform)))
+                        the-transform))
+                (set! the-inverse-transform
+                      (mat*mat
+                        the-inverse-transform
+                        (mat (/ xs)      0 0
+                                  0 (/ ys) 0
+                                  0      0 1))))
               (scale! xs xs)))
 
         (define (rotate! angle)
@@ -129,7 +154,13 @@
                     (mat c (- s) 0
                          s     c 0
                          0     0 1)
-                    the-transform))))
+                    the-transform))
+            (set! the-inverse-transform
+                  (mat*mat
+                    the-inverse-transform
+                    (mat     c s 0
+                         (- s) c 0
+                             0 0 1)))))
 
         (define (shear-x! angle)
           (assert (number? angle))
@@ -138,7 +169,13 @@
                   (mat 1 (- (tan angle)) 0
                        0               1 0
                        0               0 1)
-                  the-transform)))
+                  the-transform))
+          (set! the-inverse-transform
+                (mat*mat
+                  the-inverse-transform
+                  (mat 1 (tan angle) 0
+                       0           1 0
+                       0           0 1))))
 
         (define (shear-y! angle)
           (assert (number? angle))
@@ -147,25 +184,40 @@
                   (mat           1 0 0
                        (tan angle) 1 0
                                  0 0 1)
-                  the-transform)))
+                  the-transform))
+          (set! the-inverse-transform
+                (mat*mat
+                  the-inverse-transform
+                  (mat               1 0 0
+                       (- (tan angle)) 1 0
+                                     0 0 1))))
 
         (define (reset-transform!)
-          (set! the-transform (mat-id)))
+          (set! the-transform (mat-id))
+          (set! the-inverse-transform (mat-id)))
 
         ;; Transform stack
         (define the-transform-stack '())
+        (define the-inverse-transform-stack '())
 
         (define (push-transform!)
           (set! the-transform-stack
                 (cons the-transform
-                      the-transform-stack)))
+                      the-transform-stack))
+          (set! the-inverse-transform-stack
+                (cons the-inverse-transform
+                      the-inverse-transform-stack)))
 
         (define (pop-transform!)
           (when (not (null? the-transform-stack))
             (set! the-transform
               (car the-transform-stack))
             (set! the-transform-stack
-              (cdr the-transform-stack))))
+              (cdr the-transform-stack))
+            (set! the-inverse-transform
+              (car the-inverse-transform-stack))
+            (set! the-inverse-transform-stack
+              (cdr the-inverse-transform-stack))))
 
         ;; Control both transform and style stacks
         (define (push!)
@@ -186,9 +238,18 @@
         (define (to-screen-space p)
           (assert (pt? p))
           (let* ((Tp  (mat*vec the-transform p))
-                 (sTp (pt-add-x-y Tp (origin))))
+                 (sTp (add Tp (origin-vector))))
             (if (y-up?) (flip-y sTp) sTp)))
+
+        (define (from-screen-space s)
+          (assert (pt? s))
+          (let* ((sTp (if (y-up?) (flip-y s) s))
+                 (Tp  (sub sTp (origin-vector))))
+            (mat*vec the-inverse-transform Tp)))
 
         (define (point->pixel p)
           (let-values (((x y) (crds (to-screen-space p))))
-            (values (integer x) (integer y)))))
+            (values (integer x) (integer y))))
+
+        (define (pixel->point x y)
+          (from-screen-space (pt x y))))

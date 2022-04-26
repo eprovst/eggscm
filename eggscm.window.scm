@@ -5,6 +5,8 @@
          opengl-to-canvas!
          window-title
          window-title!
+         window-mouse-position
+         mouse-down?
          width
          height
          size
@@ -106,7 +108,15 @@
 
         (define (resizable! bool)
           (sdl:window-resizable-set! the-window bool))
-        
+
+        (define (window-mouse-position)
+          (let-values (((_ x y) (sdl:get-mouse-state)))
+            (values x y)))
+
+        (define (mouse-down?)
+          (let-values (((btns _ _) (sdl:get-mouse-state)))
+            (member 'left btns)))
+
         (define (screenshot! file)
           (sdl:save-bmp! (canvas) file))
 

@@ -33,19 +33,14 @@
               (values (/ (vec-idx v 0) s)
                       (/ (vec-idx v 1) s)))))
 
-        (define (pt-add-x-y p1 p2)
-          (assert (pt? p1))
-          (assert (pt? p2))
-          (let-values (((x1 y1) (crds p1))
-                       ((x2 y2) (crds p2)))
-            (pt (+ x1 x2) (+ y1 y2))))
-
         ;; Underlying 3-vectors and 3-matrix operations
         (define (vec x y o)
           (assert (number? x))
           (assert (number? y))
           (assert (number? o))
-          (vector x y o))
+          (vector (exact->inexact x)
+                  (exact->inexact y)
+                  (exact->inexact o)))
 
         (define (vec? v)
           (and (vector? v)
