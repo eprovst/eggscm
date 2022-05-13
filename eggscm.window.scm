@@ -17,9 +17,7 @@
          canvas-flush!
          canvas-fill!
          canvas-pixel
-         canvas-pixel-unsafe
-         canvas-pixel!
-         canvas-pixel-unsafe!)
+         canvas-pixel!)
 
         (import scheme
           (chicken base)
@@ -29,8 +27,19 @@
 
         (define the-window '())
 
+        (define the-canvas '())
+
+        (define opengl-mode? #f)
+
         (define (canvas)
-          (sdl:window-surface the-window))
+          (if opengl-mode?
+            (begin
+              (when (or (null? the-canvas)
+                        (not (= (sdl:surface-w the-canvas) (width)))
+                        (not (= (sdl:surface-h the-canvas) (height))))
+                (set! the-canvas (sdl:make-surface (width) (height) 'rgba8888)))
+              the-canvas)
+            (sdl:window-surface the-window)))
 
         (define (initialize-sdl!)
           ; Initialise SDL
@@ -51,9 +60,10 @@
           ; Create a window
           (set! the-window (sdl:create-window! "eggscm"
                                                'undefined 'undefined
-                                               600 400))
+                                               600 400 '(shown)))
           (sdl:window-minimum-size-set! the-window '(16 16))
           (resizable! #f)
+          (set! opengl-mode? #f)
           (sdl:quit-requested?)) ; HACK: wait for full init
 
         (define (initialize-opengl-window!)
@@ -62,9 +72,10 @@
           ; Create window
           (set! the-window (sdl:create-window! "eggscm"
                                                'undefined 'undefined
-                                               600 400 '(opengl)))
+                                               600 400 '(opengl shown)))
           (sdl:window-minimum-size-set! the-window '(16 16))
           (resizable! #f)
+          (set! opengl-mode? #t)
 
           ; Use OpenGL 3.3
           (sdl:gl-attribute-set! 'context-profile-mask 'core)
@@ -80,8 +91,12 @@
           (sdl:gl-swap-window! the-window))
 
         (define (opengl-to-canvas!)
-          (gl:read-pixels 0 0 (width) (height) gl:+bgra+ gl:+unsigned-byte+
+          (gl:read-buffer gl:+back+)
+          (gl:read-pixels 0 0 (width) (height)
+                          gl:+rgba+ gl:+unsigned-int-8-8-8-8+
                           (sdl:surface-pixels-raw (canvas)))
+          (gl:flush)  ; Start pipeline
+          (gl:finish) ; Await end of pipeline
           (sdl:blit-surface! (sdl:flip-surface (canvas) #f #t) #f
                              (canvas) #f))
 
@@ -92,13 +107,13 @@
           (sdl:window-title-set! the-window title))
 
         (define (width)
-          (sdl:surface-w (canvas)))
+          (let-values (((w _) (size))) w))
 
         (define (height)
-          (sdl:surface-h (canvas)))
+          (let-values (((_ h) (size))) h))
 
         (define (size)
-          (values (width) (height)))
+          (sdl:window-size the-window))
 
         (define (size! width height)
           (sdl:window-size-set! the-window (list width height)))
@@ -133,15 +148,9 @@
 
         (define (canvas-pixel x y)
           (if (canvas-in-bounds? x y)
-            (canvas-pixel-unsafe x y)
+            (sdl:surface-ref (canvas) x y)
             (sdl:make-color 0 0 0 0)))
-
-        (define (canvas-pixel-unsafe x y)
-          (sdl:surface-ref (canvas) x y))
 
         (define (canvas-pixel! x y color)
           (when (canvas-in-bounds? x y)
-            (canvas-pixel-unsafe! x y color)))
-
-        (define (canvas-pixel-unsafe! x y color)
-          (sdl:surface-set! (canvas) x y color)))
+            (sdl:surface-set! (canvas) x y color))))

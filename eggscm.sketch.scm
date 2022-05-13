@@ -116,8 +116,6 @@
             (let-values (((x y) (window-mouse-position)))
               (gl:uniform2f u-mouse x (- (height) y)))
             (gl:uniform1i u-mouse-down (if (mouse-down?) 1 0)))
-          (gl:clear (bitwise-ior gl:+color-buffer-bit+
-                                 gl:+depth-buffer-bit+))
           ; draw rectangle across screen using vertex shader
           ; which will activate the fragment shader across
           ; the screen
@@ -136,10 +134,9 @@
                        (run-in-one-frame
                          (lambda ()
                            (render-fragment-shader)
-                           (if after-frame-code
-                               (begin (opengl-to-canvas!)
-                                      (after-frame-code)
-                                      (canvas-flush!))
-                               (opengl-flush!)))))
+                           (when after-frame-code
+                             (opengl-to-canvas!)
+                             (after-frame-code))
+                           (opengl-flush!))))
                 (sdl:wait-event!)))
           (sdl:quit!)))
